@@ -12,6 +12,10 @@ import (
 	"bytes"
 )
 
+type dictionary struct {
+     id [65536]int32
+     offset [65536]int32
+}
 
 func readHeader(file io.Reader) (int32, int32){
      var count int32
@@ -26,8 +30,7 @@ func readHeader(file io.Reader) (int32, int32){
 
 
 func main() {
-     var id [65536]int32
-     var offset [65536]int32
+     var dic1 dictionary
 
      if len(os.Args) != 2 || os.Args[1] == "-h" {
      	fmt.Println("Convert .ilstring or .dlstring to tab-separated-vector format.")
@@ -47,8 +50,8 @@ func main() {
 
      var i int32
      for i = 0; i < count; i++ {
-     	 binary.Read(file, binary.LittleEndian, &id[i])
-	 binary.Read(file, binary.LittleEndian, &offset[i])
+     	 binary.Read(file, binary.LittleEndian, &dic1.id[i])
+	 binary.Read(file, binary.LittleEndian, &dic1.offset[i])
      }
      
      data := make([]byte, dataSize)
@@ -62,11 +65,11 @@ func main() {
      buffer := make([]byte, 1024)
      var length int32
      for i = 0; i < count; i++ {
-          reader.Seek(int64(offset[i]),0)
+          reader.Seek(int64(dic1.offset[i]),0)
 	  binary.Read(reader, binary.LittleEndian, &length)
 	  length-- // last byte is \0
 	  reader.Read(buffer)
-	  fmt.Println(id[i], string(buffer[:length]))
+	  fmt.Println(dic1.id[i], string(buffer[:length]))
      }
 }
 
